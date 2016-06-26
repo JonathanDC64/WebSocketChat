@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>WebSocket Chat</title>
+		<script type="text/javascript" src="js/jquery-2.2.4.min.js"></script>
+		<script type="text/javascript" src="js/Chat.js"></script>
+		<link rel="stylesheet" href="css/bootstrap.min.css">
+		<link rel="stylesheet" href="css/bootstrap-theme.min.css">
+		<script src="js/bootstrap.min.js"></script>
+		
+		<link rel="stylesheet" href="css/font-awesome.min.css">
+		<link rel="stylesheet" href="css/styles.css" />
+		
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script type="text/javascript">
+			var chat = null;
+			$(function() {
+				$("#chat").hide();
+				$("#connectbutton").on("click", onConnectClick);
+				$("#chatinputbutton").on("click", onClick);
+				$("#chatinputtext").keypress(function(e) {
+					if (e.which == 13) {
+						e.preventDefault();
+						sendMessage();
+					}
+				});
+			});
+
+			function onOutput(output) {
+				$("#chatoutput").append("<div>" + output + "</div>");
+				$('.chatbox').scrollTop($('.chatbox')[0].scrollHeight);
+			}
+			
+			function onConnectClick(e){
+				
+				if($("#address").val() != ""){
+					alert($("#address").val());
+					chat = new Chat("ws://" + $("#address").val() + "/", onOutput);
+					$("#connect").hide();
+					$("#chat").show();
+				}
+			}
+
+			function onClick(e) {
+				sendMessage();
+			}
+
+			function sendMessage() {
+				chat.input($("#chatinputtext").val());
+				$("#chatinputtext").val("");
+			}
+		</script>
+	</head>
+	<body>
+		<div class="container">
+			<div id="connect" class="panel panel-default">
+			  	<div class="panel-heading">Connect to server</div>
+			  	<div class="panel-body">
+					<label for="usr">Server Address:</label>
+					<div class="form-group">
+						<div class="row">
+							<div class="col-sm-10">
+								<input id="address" type="text" class="form-control" placeholder="Example: 192.168.0.1:8080">
+							</div>
+							<div class="col-sm-2">
+								<button id="connectbutton" type="button" class="btn btn-default col-sm-12">Connect</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="chat" class="panel-group">
+				<div class="panel panel-default">
+					<div class="panel-heading">Chat client</div>
+					<div class="panel-body">
+						<div class="panel panel-default">
+							<div id="chatoutput" class="panel-body chatbox">
+								
+							</div>
+						</div>
+						<div class="form-group">
+							
+							<label for="comment">Message:</label>
+							<div class="row">
+								<div class="col-sm-10">
+									<textarea id="chatinputtext" class="form-control" rows="2" id="comment"></textarea>
+								</div>
+								<div class="col-sm-2">
+									<button id="chatinputbutton" type="button" class="btn btn-default btn-lg col-sm-12"><i class="fa fa-comment" aria-hidden="true"></i></button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
