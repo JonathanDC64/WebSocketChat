@@ -34,7 +34,6 @@
 			function onConnectClick(e){
 				
 				if($("#address").val() != ""){
-					alert($("#address").val());
 					chat = new Chat("ws://" + $("#address").val() + "/", onOutput);
 					$("#connect").hide();
 					$("#chat").show();
