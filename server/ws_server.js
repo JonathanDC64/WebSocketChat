@@ -1,5 +1,6 @@
 var WebSocketServer = require('websocket').server;
 var http = require('http');
+var xss = require('xss');
 var User = require('./User.js');
 
 var server = http.createServer(function(request, response) {
@@ -47,7 +48,7 @@ wsServer.on('request', function(request) {
 			var msg = JSON.parse(message.utf8Data);
 			switch(msg.type){
 				case "username":
-					this.user = new User(msg.username.substr(0, USERNAME_MAX_LENGTH));
+					this.user = new User(xss(msg.username.substr(0, USERNAME_MAX_LENGTH)));
 					console.log("User:" + JSON.stringify(this.user));
 					clients[this.user.username] = this;
 					broadcast({
@@ -63,7 +64,7 @@ wsServer.on('request', function(request) {
 						broadcast({
 							type: "sentmessage",
 							username: this.user.username,
-							message: msg.text
+							message: xss(msg.text)
 						});
 					else
 						this.sendUTF("Message must be 1024 characters or less");
