@@ -7,7 +7,7 @@ class Chat{
 		this.connected = false;
 		this.username = null;
 		this.outputCallback = outputCallback;
-		this.output("Enter a username:");
+		this.output(new Output("enterusername", "Enter a username:"));
 	}
 	
 	connect(){
@@ -18,7 +18,7 @@ class Chat{
 		
 		this.websocket.onopen = 
 			function(evt){
-				self.output("Connected to: " + self.wsUri)
+				self.output(new Output("connected", "Connected to: " + self.wsUri))
 				self.connected = true;
 				self.sendData(
 					{
@@ -31,14 +31,48 @@ class Chat{
 		
 		this.websocket.onclose = 
 			function(evt){
-				self.output("Disconnected from: " + self.wsUri);
+				self.output(new Output("disconnected","Disconnected from: " + self.wsUri));
 				self.connected = false;
 			};
 		
 		
 		this.websocket.onmessage= 
 			function(evt){
-				self.output(evt.data)
+				var msg = JSON.parse(evt.data);
+				var data = new Output(msg.type, null);
+				switch(msg.type){
+					case "sentmessage":
+						data.message = 
+							"<span>" +
+								"<span class='bold'>" + 
+									msg.username + 
+								"</span>: " +
+							msg.message + 
+							"</span>";
+						break;
+						
+					case "joined":
+						data.message = 
+							"<span class='success'>" +
+								msg.message +
+							"</span>";
+						break;
+						
+					case "left":
+						data.message = 
+							"<span class='error'>" +
+								msg.message +
+							"</span>";
+						break;
+						
+					case "userlist":
+						data["users"] = msg.users;
+						break;
+				}
+				if(data.type != null){
+					self.output(data);
+				}
+				
 			};
 		
 		
@@ -78,8 +112,14 @@ class Chat{
 		}
 	}
 	
-	output(text){
-		var out = text;
-		this.outputCallback(out);
+	output(data){
+		this.outputCallback(data);
+	}
+}
+
+class Output{
+	constructor(type, message){
+		this.type = type;
+		this.message = message;
 	}
 }

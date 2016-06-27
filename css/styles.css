@@ -3,3 +3,15 @@
   height: calc(100vh - 200px);
   overflow-y: scroll; 
 }
+
+.bold{
+	font-weight: bold;
+}
+
+.success{
+	color: #5cb85c;
+}
+
+.error{
+	color: #d9534f;
+}

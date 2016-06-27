@@ -1,5 +1,6 @@
 var WebSocketServer = require('websocket').server;
 var http = require('http');
+var User = require('./User.js');
 
 var server = http.createServer(function(request, response) {
     console.log((new Date()) + ' Received request for ' + request.url);
@@ -41,20 +42,29 @@ wsServer.on('request', function(request) {
     console.log((new Date()) + ' Connection accepted.');
 	
     connection.on('message', function(message) {
-		console.log(message);
         if (message.type === 'utf8') {
             console.log('Received Message: ' + message.utf8Data);
 			var msg = JSON.parse(message.utf8Data);
 			switch(msg.type){
 				case "username":
-					this.username = msg.username.substr(0, USERNAME_MAX_LENGTH);
-					clients[this.username] = this;
-					broadcast(this.username + " joined the chat.");
+					this.user = new User(msg.username.substr(0, USERNAME_MAX_LENGTH));
+					console.log("User:" + JSON.stringify(this.user));
+					clients[this.user.username] = this;
+					broadcast({
+							type: "joined",
+							message: this.user.username + " joined the chat."
+						});
+					
+					broadcastUserlist();
 					break;
 					
 				case "message":
 					if(msg.text.length <= MESSAGE_MAX_LENGTH)
-						broadcast("<b>" + this.username + "</b>: " + msg.text);
+						broadcast({
+							type: "sentmessage",
+							username: this.user.username,
+							message: msg.text
+						});
 					else
 						this.sendUTF("Message must be 1024 characters or less");
 					break;
@@ -68,12 +78,38 @@ wsServer.on('request', function(request) {
 	
     connection.on('close', function(reasonCode, description) {
         console.log((new Date()) + ' Peer ' + connection.remoteAddress + ' disconnected.');
-		delete clients[this.username];
+		delete clients[this.user.username];
+		broadcast({
+			type: "left",
+			message: this.user.username + " left the chat."
+		});
+		broadcastUserlist();
     });
 });
 
+function broadcastUserlist(){
+	var _users = getUserList();
+	broadcast({
+			type: "userlist",
+			users: _users
+	   }
+	);
+}
+
+function unicast(client, data){
+	client.sendUTF(JSON.stringify(data));
+}
+
 function broadcast(data){
 	Object.keys(clients).forEach(function(key,index) {
-    	clients[key].sendUTF(data);
+    	clients[key].sendUTF(JSON.stringify(data));
 	});
+}
+
+function getUserList(){
+	var users = [];
+	Object.keys(clients).forEach(function(key,index){
+		users.push(key);
+	});
+	return users;
 }
