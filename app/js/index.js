@@ -1,5 +1,6 @@
 var chat = null;
 $(function() {
+	
 	$("#chat").hide();
 	$("#connectbutton").on("click", onConnectClick);
 	$("#chatinputbutton").on("click", onClick);
@@ -9,6 +10,10 @@ $(function() {
 			sendMessage();
 		}
 	});
+	
+	if(location.protocol !== 'https:'){
+		$('#sslselection').val("no");
+	}
 });
 
 function onOutput(data) {
@@ -26,9 +31,13 @@ function onOutput(data) {
 }
 
 function onConnectClick(e){
-
 	if($("#address").val() != ""){
-		chat = new Chat("ws://" + $("#address").val() + "/", onOutput);
+		var ws = "ws";
+		if($('#sslselection').find(":selected").text() == 'yes'){
+			ws += 's';
+		}
+		
+		chat = new Chat(ws + "://" + $("#address").val() + "/", onOutput);
 		$("#connect").hide();
 		$("#chat").show();
 	}

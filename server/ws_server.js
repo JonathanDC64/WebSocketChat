@@ -1,15 +1,26 @@
 var WebSocketServer = require('websocket').server;
 var http = require('http');
+var https = require('https');
+var fs = require('fs');
 var xss = require('xss');
+var crypto = require('crypto');
 var User = require('./User.js');
+
+// Private key and certification used for https
+var options = {
+  key: fs.readFileSync('cert/server.key', 'utf8'),
+  cert: fs.readFileSync('cert/server.crt', 'utf8')
+};
 
 var server = http.createServer(function(request, response) {
     console.log((new Date()) + ' Received request for ' + request.url);
-    response.writeHead(404);
+    response.writeHead(200);
     response.end();
 });
-server.listen(8080, function() {
-    console.log((new Date()) + ' Server is listening on port 8080');
+
+var port = 8080;
+server.listen(port, function() {
+    console.log((new Date()) + ' Server is listening on port ' + port);
 });
 
 wsServer = new WebSocketServer({
